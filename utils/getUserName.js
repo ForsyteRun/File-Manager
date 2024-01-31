@@ -1,4 +1,4 @@
-function getUserName(str = 'username'){
+export function getUserName(str = 'username'){
   const nameArray = process.argv;
   const userName = nameArray.find(el => el.includes(str))
     .replace('--', '')
@@ -7,5 +7,3 @@ function getUserName(str = 'username'){
   
   return userName
 }
-
-module.exports =  getUserName
