@@ -1,5 +1,5 @@
 import { getUserName, getPathToRoot, createFile, getCurrenDirText } from "./utils/index.mjs"
-import { join, isAbsolute } from 'path'
+import { join, isAbsolute, resolve } from 'path'
 
 const userName = getUserName()
 const pathToRoot = getPathToRoot(import.meta.url)
@@ -29,6 +29,17 @@ process.stdin.on('data', async (data) => {
         PATH_TO_CURRENT_DIR = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
       }
 
+      getCurrenDirText(PATH_TO_CURRENT_DIR)
+    break;
+
+    case 'up':
+      const rootDir = PATH_TO_CURRENT_DIR || pathToRoot
+      if (rootDir === pathToRoot) {
+        getCurrenDirText(PATH_TO_CURRENT_DIR)
+        return
+      }
+
+      PATH_TO_CURRENT_DIR = resolve(rootDir, '../')
       getCurrenDirText(PATH_TO_CURRENT_DIR)
     break;
         
