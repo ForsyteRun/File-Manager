@@ -1,7 +1,7 @@
 import {writeFile} from 'node:fs/promises'
 import { join } from 'node:path'
 
-const createFile = async (path, fileName) => {
+export const createFile = async (path, fileName) => {
   const filePath = join(path, fileName);
       try {
     
@@ -11,5 +11,3 @@ const createFile = async (path, fileName) => {
         console.error(`Error creating file: ${error.message}`);
       }
 }
-
-export default createFile

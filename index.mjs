@@ -1,6 +1,4 @@
-import createFile from "./utils/createFile.mjs"
-import getPathToRoot from "./utils/getPathToRoot.mjs"
-import { getUserName } from "./utils/getUserName.mjs"
+import { getUserName, getPathToRoot, createFile } from "./utils/index.mjs"
 
 const userName = getUserName()
 const pathToRoot = getPathToRoot(import.meta.url)
