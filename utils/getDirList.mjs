@@ -1,15 +1,11 @@
-import { readdir} from 'node:fs/promises'
-import { extname} from 'node:path'
+import { readdir } from 'node:fs/promises'
+import { getDirInfo } from './getDirInfo.mjs'
 
 export const getDirList = async (path) => {
   try {
     const elements = await readdir(path)
-    
-    console.table(
-      elements.map((el) => { 
-        const type = (!!extname(el) || el[0] === '.') ? 'file': 'directory'
-        return {Name: el, Type: type} })
-    );
+
+    getDirInfo(elements)
 
   } catch (error) {//make common error
     throw new Error(error)
