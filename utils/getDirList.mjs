@@ -1,11 +1,11 @@
 import { readdir } from 'node:fs/promises'
-import { getDirInfo } from './getDirInfo.mjs'
+import { logDirInfo } from './logDirInfo.mjs'
 
 export const getDirList = async (path) => {
   try {
-    const elements = await readdir(path)
+    const elements = await readdir(path, { withFileTypes: true })
 
-    getDirInfo(elements)
+    logDirInfo(elements)
 
   } catch (error) {//make common error
     throw new Error(error)
