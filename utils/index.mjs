@@ -3,6 +3,7 @@ import  {getPathToRoot}  from './getPathToRoot.mjs'
 import {getUserName}  from './getUserName.mjs' 
 import {getCurrenDirText}  from './getCurrenDirText.mjs' 
 import {getDirList}  from './getDirList.mjs' 
+import {logFileData}  from './logFileData.mjs' 
 
-export {createFile, getPathToRoot, getUserName, getCurrenDirText, getDirList}
+export {createFile, getPathToRoot, getUserName, getCurrenDirText, getDirList, logFileData}
 

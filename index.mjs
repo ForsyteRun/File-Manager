@@ -1,4 +1,4 @@
-import { getUserName, getPathToRoot, createFile, getCurrenDirText, getDirList } from "./utils/index.mjs"
+import { getUserName, getPathToRoot, createFile, getCurrenDirText, getDirList, logFileData } from "./utils/index.mjs"
 import { join, isAbsolute, resolve } from 'path'
 
 const userName = getUserName()
@@ -56,6 +56,10 @@ process.stdin.on('data', async (data) => {
     case 'ls':
       await getDirList(PATH_TO_CURRENT_DIR || pathToRoot)
       getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+    break;
+
+    case 'cat':
+      logFileData(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
     break;
     
     default:
