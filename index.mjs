@@ -1,5 +1,5 @@
-import { getUserName, getPathToRoot, createFile, getCurrenDirText, getDirList, logFileData } from "./utils/index.mjs"
-import { join, isAbsolute, resolve } from 'path'
+import { isAbsolute, join, resolve } from 'path'
+import { createFile, getCurrenDirText, getDirList, getPathToRoot, getUserName, isDirectoryPath, logFileData } from "./utils/index.mjs"
 
 const userName = getUserName()
 const pathToRoot = getPathToRoot(import.meta.url)
@@ -22,14 +22,23 @@ process.stdin.on('data', async (data) => {
       break;
 
     case 'cd':
-      if (isAbsolute(fileName)) {
-        //добавить проверку на наличие папки
-        PATH_TO_CURRENT_DIR = fileName
-      } else {
-        PATH_TO_CURRENT_DIR = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
-      }
+      const relativePath = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
 
-      getCurrenDirText(PATH_TO_CURRENT_DIR)
+      const path = isAbsolute(fileName) ? fileName : relativePath
+
+      try {
+        const isDir = await isDirectoryPath(path)
+        
+        if (isDir) {
+          PATH_TO_CURRENT_DIR = path
+        }  else {
+          process.stdout.write('Operation faild \n')
+        }
+        
+        getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+      } catch (error) {
+        throw new Error(error)
+      }
     break;
 
     case 'up':
