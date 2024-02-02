@@ -1,7 +1,7 @@
+import { access } from 'node:fs'
+import { rename } from 'node:fs/promises'
 import { isAbsolute, join, resolve } from 'path'
 import { createFile, getCurrenDirText, getDirList, getPathToRoot, getUserName, isDirectoryPath, isFilePath, logFileData } from "./utils/index.mjs"
-import { rename } from 'node:fs/promises'
-
 
 const userName = getUserName()
 const pathToRoot = getPathToRoot(import.meta.url)
@@ -92,13 +92,22 @@ process.stdin.on('data', async (data) => {
     case 'rn':
       const oldPath = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
       const newPath = join(PATH_TO_CURRENT_DIR || pathToRoot, directFileName)
+  
+      access(oldPath, async (err) => {
+        if (err) {
+          process.stdout.write('Operation faild \n')
+          getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+          return
+        }
 
-      try {
-        await rename(oldPath, newPath)
-        getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
-      } catch (error) {
-        throw new Error(error)
-      }
+        try {
+          await rename(oldPath, newPath)
+          getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+        } catch (error) {
+          throw new Error(error)
+        }
+    })
+
     break;
     
     default:
