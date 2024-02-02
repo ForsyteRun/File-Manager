@@ -1,7 +1,18 @@
 import { access } from 'node:fs'
 import { rename, unlink } from 'node:fs/promises'
 import { isAbsolute, join, resolve } from 'path'
-import { copyFile, createFile, getCurrenDirText, getDirList, getPathToRoot, getUserName, isDirectoryPath, isFilePath, logFileData } from "./utils/index.mjs"
+import { 
+  copyFile, 
+  createFile, 
+  getCurrenDirText, 
+  getDirList, 
+  getHash, 
+  getPathToRoot, 
+  getUserName, 
+  isDirectoryPath, 
+  isFilePath, 
+  logError, 
+  logFileData } from "./utils/index.mjs"
 import { getOsData } from './eol.mjs'
 
 const userName = getUserName()
@@ -162,21 +173,30 @@ process.stdin.on('data', async (data) => {
     case 'rm': 
     // const isAnotherDir = directFileName.split('/').length > 1 //TODO//move to another dir
     // if (isAnotherDir) directFileName = '/' + directFileName
-
-    const isFile = await isFilePath(sourcePath)
     
     try {
+      const isFile = await isFilePath(sourcePath)
+      
       if (!isFile) throw new Error()
-
+      
       await unlink(sourcePath)
+
     } catch  {
-      process.stdout.write('Operation faild \n')
+      logError()
     }
+    
+    break
+
+    case 'hash': 
+      const isPathFile = await isFilePath(sourcePath)
+     
+      isPathFile ? getHash(currentPath) : logError()
+      
+      break
+
+      default:
+        break;
+      }
 
     getCurrenDirText(currentPath)
-
-    break
-    default:
-      break;
-    }
 })
