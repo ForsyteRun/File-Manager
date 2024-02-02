@@ -2,6 +2,7 @@ import { access } from 'node:fs'
 import { rename, unlink } from 'node:fs/promises'
 import { isAbsolute, join, resolve } from 'path'
 import { copyFile, createFile, getCurrenDirText, getDirList, getPathToRoot, getUserName, isDirectoryPath, isFilePath, logFileData } from "./utils/index.mjs"
+import { getOsData } from './eol.mjs'
 
 const userName = getUserName()
 const pathToRoot = getPathToRoot(import.meta.url)
@@ -17,6 +18,11 @@ getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
 
 process.stdin.on('data', async (data) => {
   let [work, fileName = '', directFileName = ''] = data.toString().trim().split(' ')
+
+  if (work === 'os') {
+    getOsData(fileName, PATH_TO_CURRENT_DIR || pathToRoot)
+    return
+  }
 
   const currentPath = PATH_TO_CURRENT_DIR || pathToRoot
 
