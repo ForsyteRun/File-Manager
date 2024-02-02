@@ -1,7 +1,8 @@
-import { access } from 'node:fs'
-import { rename } from 'node:fs/promises'
+import { access, createReadStream, createWriteStream } from 'node:fs'
+import { readFile, rename } from 'node:fs/promises'
 import { isAbsolute, join, resolve } from 'path'
 import { createFile, getCurrenDirText, getDirList, getPathToRoot, getUserName, isDirectoryPath, isFilePath, logFileData } from "./utils/index.mjs"
+import { pipeline } from 'node:stream/promises'
 
 const userName = getUserName()
 const pathToRoot = getPathToRoot(import.meta.url)
@@ -16,7 +17,7 @@ getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
 
 
 process.stdin.on('data', async (data) => {
-  const [work, fileName, directFileName] = data.toString().trim().split(' ')
+  let [work, fileName, directFileName] = data.toString().trim().split(' ')
 
   switch (work) {
     case '.exit':
@@ -109,7 +110,33 @@ process.stdin.on('data', async (data) => {
     })
 
     break;
-    
+
+    case 'cp': 
+    // const isAnotherDir = directFileName.split('/').length > 1 //TODO//copy to another dir
+    // if (isAnotherDir) directFileName = '/' + directFileName
+
+    const sourcePath = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
+    const destPath = join(PATH_TO_CURRENT_DIR || pathToRoot, directFileName)
+
+    const isFile = await isFilePath(sourcePath)
+
+    if (!isFile) {
+      process.stdout.write('Operation faild \n')
+      getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+      return
+    } 
+
+    const readStream = createReadStream(sourcePath)
+    const writeStream = createWriteStream(destPath)
+
+    pipeline(
+      readStream,
+      writeStream
+    )
+
+    getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+
+    break
     default:
       break;
     }
