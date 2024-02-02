@@ -1,5 +1,7 @@
 import { isAbsolute, join, resolve } from 'path'
 import { createFile, getCurrenDirText, getDirList, getPathToRoot, getUserName, isDirectoryPath, isFilePath, logFileData } from "./utils/index.mjs"
+import { rename } from 'node:fs/promises'
+
 
 const userName = getUserName()
 const pathToRoot = getPathToRoot(import.meta.url)
@@ -14,7 +16,8 @@ getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
 
 
 process.stdin.on('data', async (data) => {
-  const [work, fileName] = data.toString().trim().split(' ')
+  const [work, fileName, directFileName] = data.toString().trim().split(' ')
+
   switch (work) {
     case '.exit':
       process.stdout.write(finalText),
@@ -84,6 +87,18 @@ process.stdin.on('data', async (data) => {
         } catch (error) {
           throw new Error(error)
         }
+    break;
+
+    case 'rn':
+      const oldPath = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
+      const newPath = join(PATH_TO_CURRENT_DIR || pathToRoot, directFileName)
+
+      try {
+        await rename(oldPath, newPath)
+        getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+      } catch (error) {
+        throw new Error(error)
+      }
     break;
     
     default:
