@@ -6,6 +6,7 @@ import {getDirList}  from './getDirList.mjs'
 import {logFileData}  from './logFileData.mjs' 
 import {isDirectoryPath}  from './isDirectoryPath.mjs' 
 import {isFilePath}  from './isFilePath.mjs' 
+import {copyFile}  from './copyFile.mjs' 
 
-export {createFile, getPathToRoot, getUserName, getCurrenDirText, getDirList, logFileData, isDirectoryPath, isFilePath}
+export {createFile, getPathToRoot, getUserName, getCurrenDirText, getDirList, logFileData, isDirectoryPath, isFilePath, copyFile}
 
