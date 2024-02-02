@@ -101,6 +101,8 @@ process.stdin.on('data', async (data) => {
     break;
 
     case 'rn':
+
+    //TODO: if only one parametr
       const oldPath = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
       const newPath = join(PATH_TO_CURRENT_DIR || pathToRoot, directFileName)
   
@@ -142,6 +144,24 @@ process.stdin.on('data', async (data) => {
 
     try {
       await copyFile(sourcePath, destPath)
+      await unlink(sourcePath)
+    } catch  {
+      process.stdout.write('Operation faild \n')
+    }
+
+    getCurrenDirText(currentPath)
+
+    break
+
+    case 'rm': 
+    // const isAnotherDir = directFileName.split('/').length > 1 //TODO//move to another dir
+    // if (isAnotherDir) directFileName = '/' + directFileName
+
+    const isFile = await isFilePath(sourcePath)
+    
+    try {
+      if (!isFile) throw new Error()
+
       await unlink(sourcePath)
     } catch  {
       process.stdout.write('Operation faild \n')
