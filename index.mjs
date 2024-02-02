@@ -1,5 +1,5 @@
 import { isAbsolute, join, resolve } from 'path'
-import { createFile, getCurrenDirText, getDirList, getPathToRoot, getUserName, isDirectoryPath, logFileData } from "./utils/index.mjs"
+import { createFile, getCurrenDirText, getDirList, getPathToRoot, getUserName, isDirectoryPath, isFilePath, logFileData } from "./utils/index.mjs"
 
 const userName = getUserName()
 const pathToRoot = getPathToRoot(import.meta.url)
@@ -68,7 +68,22 @@ process.stdin.on('data', async (data) => {
     break;
 
     case 'cat':
-      logFileData(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
+       const pathFileToRead = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
+
+       try {
+         const isFile = await isFilePath(pathFileToRead)
+
+         if(isFile) {
+           logFileData(pathFileToRead, PATH_TO_CURRENT_DIR || pathToRoot)
+
+          } else {
+            process.stdout.write('Operation faild \n')
+            getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+          }
+
+        } catch (error) {
+          throw new Error(error)
+        }
     break;
     
     default:

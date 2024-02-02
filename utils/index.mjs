@@ -5,6 +5,7 @@ import {getCurrenDirText}  from './getCurrenDirText.mjs'
 import {getDirList}  from './getDirList.mjs' 
 import {logFileData}  from './logFileData.mjs' 
 import {isDirectoryPath}  from './isDirectoryPath.mjs' 
+import {isFilePath}  from './isFilePath.mjs' 
 
-export {createFile, getPathToRoot, getUserName, getCurrenDirText, getDirList, logFileData, isDirectoryPath}
+export {createFile, getPathToRoot, getUserName, getCurrenDirText, getDirList, logFileData, isDirectoryPath, isFilePath}
 

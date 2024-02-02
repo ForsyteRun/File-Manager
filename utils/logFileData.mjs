@@ -1,17 +1,14 @@
 import {createReadStream} from 'node:fs'
 import { getCurrenDirText } from './getCurrenDirText.mjs';
-import { join } from 'node:path';
 
-export const logFileData = (rootPath, filePath) => {
-  const pathFileToRead = join(rootPath, filePath)
-
-  const readableStream  = createReadStream(pathFileToRead)
+export const logFileData = (path, displayPath) => {
+  const readableStream  = createReadStream(path)
 
   readableStream.on("data", function(chunk){ 
     console.log(chunk.toString());
 });
 
   readableStream.on("end", function(){ 
-    getCurrenDirText(rootPath)
+    getCurrenDirText(displayPath)
 });
 }
