@@ -9,6 +9,20 @@ import {isFilePath}  from './isFilePath.mjs'
 import {copyFile}  from './copyFile.mjs' 
 import {getHash}  from './getHash.mjs' 
 import {logError}  from './logError.mjs' 
+import {zlibActions}  from './zlibActions.mjs' 
 
-export {createFile, getPathToRoot, getUserName, getCurrenDirText, getDirList, logFileData, isDirectoryPath, isFilePath, copyFile, getHash, logError}
+export {
+  createFile, 
+  getPathToRoot, 
+  getUserName,
+  getCurrenDirText, 
+  getDirList, 
+  logFileData, 
+  isDirectoryPath, 
+  isFilePath, 
+  copyFile, 
+  getHash, 
+  logError,
+  zlibActions
+}
 

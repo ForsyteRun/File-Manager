@@ -1,4 +1,4 @@
-import { access } from 'node:fs'
+import { access} from 'node:fs'
 import { rename, unlink } from 'node:fs/promises'
 import { isAbsolute, join, resolve } from 'path'
 import { 
@@ -12,7 +12,9 @@ import {
   isDirectoryPath, 
   isFilePath, 
   logError, 
-  logFileData } from "./utils/index.mjs"
+  logFileData, 
+  zlibActions
+} from "./utils/index.mjs"
 import { getOsData } from './eol.mjs'
 
 const userName = getUserName()
@@ -26,7 +28,6 @@ const finalText = `Thank you for using File Manager, ${userName}, goodbye! \n`
 process.stdout.write(initText),
 getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
 
-
 process.stdin.on('data', async (data) => {
   let [work, fileName = '', directFileName = ''] = data.toString().trim().split(' ')
 
@@ -39,6 +40,8 @@ process.stdin.on('data', async (data) => {
 
   const sourcePath = join(currentPath, fileName)
   const destPath = join(currentPath, directFileName)
+
+  const isFile = await isFilePath(sourcePath)
 
   switch (work) {
     case '.exit':
@@ -102,9 +105,7 @@ process.stdin.on('data', async (data) => {
        const pathFileToRead = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
 
        try {
-         const isFile = await isFilePath(pathFileToRead)
-
-         if(isFile) {
+        if(isFile) {
            logFileData(pathFileToRead, PATH_TO_CURRENT_DIR || pathToRoot)
 
           } else {
@@ -119,83 +120,91 @@ process.stdin.on('data', async (data) => {
 
     case 'rn':
 
-    //TODO: if only one parametr
-      const oldPath = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
-      const newPath = join(PATH_TO_CURRENT_DIR || pathToRoot, directFileName)
-  
-      access(oldPath, async (err) => {
-        if (err) {
-          process.stdout.write('Operation faild \n')
-          getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
-          return
-        }
+      //TODO: if only one parametr
+        const oldPath = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
+        const newPath = join(PATH_TO_CURRENT_DIR || pathToRoot, directFileName)
+    
+        access(oldPath, async (err) => {
+          if (err) {
+            process.stdout.write('Operation faild \n')
+            getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+            return
+          }
 
-        try {
-          await rename(oldPath, newPath)
-          getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
-        } catch (error) {
-          throw new Error(error)
-        }
-    })
+          try {
+            await rename(oldPath, newPath)
+            getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+          } catch (error) {
+            throw new Error(error)
+          }
+      })
 
     break;
 
     case 'cp': 
-    // const isAnotherDir = directFileName.split('/').length > 1 //TODO//copy to another dir
-    // if (isAnotherDir) directFileName = '/' + directFileName
+      // const isAnotherDir = directFileName.split('/').length > 1 //TODO//copy to another dir
+      // if (isAnotherDir) directFileName = '/' + directFileName
 
-    try {
-      await copyFile(sourcePath, destPath)
-      
-    } catch (error) {
-      process.stdout.write('Operation faild \n')
-    }
+      try {
+        await copyFile(sourcePath, destPath)
+        
+      } catch (error) {
+        process.stdout.write('Operation faild \n')
+      }
 
-    getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+      getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
 
     break
 
     case 'mv': 
-    // const isAnotherDir = directFileName.split('/').length > 1 //TODO//move to another dir
-    // if (isAnotherDir) directFileName = '/' + directFileName
+      // const isAnotherDir = directFileName.split('/').length > 1 //TODO//move to another dir
+      // if (isAnotherDir) directFileName = '/' + directFileName
 
-    try {
-      await copyFile(sourcePath, destPath)
-      await unlink(sourcePath)
-    } catch  {
-      process.stdout.write('Operation faild \n')
-    }
+      try {
+        await copyFile(sourcePath, destPath)
+        await unlink(sourcePath)
+      } catch  {
+        process.stdout.write('Operation faild \n')
+      }
 
-    getCurrenDirText(currentPath)
+      getCurrenDirText(currentPath)
 
     break
 
     case 'rm': 
-    // const isAnotherDir = directFileName.split('/').length > 1 //TODO//move to another dir
-    // if (isAnotherDir) directFileName = '/' + directFileName
-    
-    try {
-      const isFile = await isFilePath(sourcePath)
+      // const isAnotherDir = directFileName.split('/').length > 1 //TODO//move to another dir
+      // if (isAnotherDir) directFileName = '/' + directFileName
       
-      if (!isFile) throw new Error()
-      
-      await unlink(sourcePath)
+      try {
+        if (!isFile) throw new Error()
+        
+        await unlink(sourcePath)
 
-    } catch  {
-      logError()
-    }
-    
+      } catch  {
+        logError()
+      }
+      
     break
 
     case 'hash': 
-      const isPathFile = await isFilePath(sourcePath)
-     
-      isPathFile ? getHash(currentPath) : logError()
+      isFile ? getHash(currentPath) : logError()
       
-      break
+    break
+
+    case 'compress': 
+      isFile ? zlibActions('compress', sourcePath, destPath) : logError()
+
+    break
+ 
+    case 'decompress': 
+      isFile ? zlibActions('decompress', sourcePath, destPath) : logError()
+
+    break
 
       default:
-        break;
+        getCurrenDirText(currentPath)
+
+      break;
       }
 
     getCurrenDirText(currentPath)
