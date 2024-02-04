@@ -1,20 +1,20 @@
-import { rename, unlink, mkdir } from 'node:fs/promises'
-import { isAbsolute, join, resolve, extname } from 'path'
-import { 
-  copyFile, 
-  createFile, 
-  getCurrenDirText, 
-  getDirList, 
-  getHash, 
-  getPathToRoot, 
-  getUserName, 
-  isDirectoryPath, 
-  isFilePath, 
-  logError, 
-  logFileData, 
+import { mkdir, rename, unlink } from 'node:fs/promises'
+import { extname, isAbsolute, join, resolve } from 'path'
+import { getOsData } from './eol.mjs'
+import {
+  copyFile,
+  createFile,
+  getCurrenDirText,
+  getDirList,
+  getHash,
+  getPathToRoot,
+  getUserName,
+  isDirectoryPath,
+  isFilePath,
+  logError,
+  logFileData,
   zlibActions
 } from "./utils/index.mjs"
-import { getOsData } from './eol.mjs'
 
 const userName = getUserName()
 const pathToRoot = getPathToRoot(import.meta.url)
@@ -37,8 +37,8 @@ process.stdin.on('data', async (data) => {
     return
   }
 
-  const sourcePath = join(currentPath, fileName)
-  const destPath = join(currentPath, directFileName)
+  const sourcePath = isAbsolute(fileName) ? fileName: join(currentPath, fileName)
+  const destPath = isAbsolute(directFileName) ? directFileName: join(currentPath, directFileName)
 
   const isFile = await isFilePath(sourcePath)
 
@@ -49,14 +49,12 @@ process.stdin.on('data', async (data) => {
       return
 
     case 'cd':
-      const path = isAbsolute(fileName) ? fileName : sourcePath
-
       try {
-        const isDir = await isDirectoryPath(path)
+        const isDir = await isDirectoryPath(sourcePath)
         
         if (!isDir) throw new Error(error)
 
-        PATH_TO_CURRENT_DIR = path
+        PATH_TO_CURRENT_DIR = sourcePath
         
       } catch {
         logError()
@@ -112,7 +110,6 @@ process.stdin.on('data', async (data) => {
     case 'rn':
       try {
         if (!isFile || !destPath) throw new Error()
-    
         await rename(sourcePath, destPath);
     
       } catch {
@@ -123,13 +120,16 @@ process.stdin.on('data', async (data) => {
 
     case 'cp': 
       try {
-        if (!isFile || !destPath) throw new Error()//если дир уже существует
-
+        if (!isFile || !destPath) throw new Error()
+        
+        
         if(!extname(destPath)){
           await mkdir(destPath)
-          const pathDir = resolve(currentPath, destPath)
-        
-          await copyFile(sourcePath, join(pathDir, fileName))
+
+          const pathDir = isAbsolute(destPath) ? destPath : resolve(currentPath, destPath)
+          const fileWithExt = isAbsolute(pathDir) ? join(pathDir, fileName.split('\\')[fileName.split('\\').length - 1], ) : join(pathDir, fileName)
+
+          await copyFile(sourcePath, fileWithExt)
 
         } else {
           await copyFile(sourcePath, destPath)
@@ -144,19 +144,22 @@ process.stdin.on('data', async (data) => {
 
     case 'mv': 
       try {
-        if (!isFile || !destPath) throw new Error()//если дир уже существует
-
+        if (!isFile || !destPath) throw new Error()
+          
         if(!extname(destPath)){
           await mkdir(destPath)
-          const pathDir = resolve(currentPath, destPath)
-        
-          await copyFile(sourcePath, join(pathDir, fileName))
-          await unlink(sourcePath)
+          
+          const pathDir = isAbsolute(destPath) ? destPath : resolve(currentPath, destPath)
+          const fileWithExt = isAbsolute(pathDir) ? join(pathDir, fileName.split('\\')[fileName.split('\\').length - 1], ) : join(pathDir, fileName)
+
+          await copyFile(sourcePath, fileWithExt)
 
         } else {
-          throw new Error()
+          await copyFile(sourcePath, destPath)
+
         }
         
+        await unlink(sourcePath)
       } catch {
         logError();
 
@@ -194,8 +197,6 @@ process.stdin.on('data', async (data) => {
     break
 
       default:
-        getCurrenDirText(currentPath)
-
       break;
       }
       
