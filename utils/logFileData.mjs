@@ -6,9 +6,9 @@ export const logFileData = (path, displayPath) => {
 
   readableStream.on("data", function(chunk){ 
     console.log(chunk.toString());
-});
+  });
 
   readableStream.on("end", function(){ 
     getCurrenDirText(displayPath)
-});
+  });
 }

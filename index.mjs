@@ -1,6 +1,5 @@
-import { access} from 'node:fs'
-import { rename, unlink } from 'node:fs/promises'
-import { isAbsolute, join, resolve } from 'path'
+import { rename, unlink, mkdir } from 'node:fs/promises'
+import { isAbsolute, join, resolve, extname } from 'path'
 import { 
   copyFile, 
   createFile, 
@@ -30,13 +29,13 @@ getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
 
 process.stdin.on('data', async (data) => {
   let [work, fileName = '', directFileName = ''] = data.toString().trim().split(' ')
+  
+  const currentPath = PATH_TO_CURRENT_DIR || pathToRoot
 
   if (work === 'os') {
-    getOsData(fileName, PATH_TO_CURRENT_DIR || pathToRoot)
+    getOsData(fileName, currentPath)
     return
   }
-
-  const currentPath = PATH_TO_CURRENT_DIR || pathToRoot
 
   const sourcePath = join(currentPath, fileName)
   const destPath = join(currentPath, directFileName)
@@ -47,133 +46,125 @@ process.stdin.on('data', async (data) => {
     case '.exit':
       process.stdout.write(finalText),
       process.stdin.destroy()
-      break;
+      return
 
     case 'cd':
-      const relativePath = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
-
-      const path = isAbsolute(fileName) ? fileName : relativePath
+      const path = isAbsolute(fileName) ? fileName : sourcePath
 
       try {
         const isDir = await isDirectoryPath(path)
         
-        if (isDir) {
-          PATH_TO_CURRENT_DIR = path
-        }  else {
-          process.stdout.write('Operation faild \n')
-        }
+        if (!isDir) throw new Error(error)
+
+        PATH_TO_CURRENT_DIR = path
         
-        getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
-      } catch (error) {
-        throw new Error(error)
+      } catch {
+        logError()
       }
+
     break;
 
     case 'up':
-      const rootDir = PATH_TO_CURRENT_DIR || pathToRoot
-
-      if (rootDir === pathToRoot) {
-        getCurrenDirText(PATH_TO_CURRENT_DIR)
+      if (currentPath === pathToRoot) {
         return
       }
+      
+      PATH_TO_CURRENT_DIR = resolve(currentPath, '../')
 
-      PATH_TO_CURRENT_DIR = resolve(rootDir, '../')
-      getCurrenDirText(PATH_TO_CURRENT_DIR)
     break;
         
     case 'add':
       try {
-        await createFile(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
-        getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
-      } catch (error) {
-        throw new Error(error)
+        await createFile(sourcePath)
+
+      } catch {
+        logError()
       }
+
     break;
 
     case 'ls':
       try {
-        
         await getDirList(currentPath)
+
       } catch  {
-        console.log('ls error');
+        logError()
       }
       
-      getCurrenDirText(currentPath)
     break;
 
     case 'cat':
-       const pathFileToRead = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
-
-       try {
+      try {
         if(isFile) {
-           logFileData(pathFileToRead, PATH_TO_CURRENT_DIR || pathToRoot)
-
-          } else {
-            process.stdout.write('Operation faild \n')
-            getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
-          }
-
-        } catch (error) {
-          throw new Error(error)
+          logFileData(sourcePath, currentPath)
+          return
+          
+        } else {
+          throw new Error()
         }
+
+      } catch (error) {
+        logError()
+      }
+
     break;
 
     case 'rn':
-
-      //TODO: if only one parametr
-        const oldPath = join(PATH_TO_CURRENT_DIR || pathToRoot, fileName)
-        const newPath = join(PATH_TO_CURRENT_DIR || pathToRoot, directFileName)
+      try {
+        if (!isFile || !destPath) throw new Error()
     
-        access(oldPath, async (err) => {
-          if (err) {
-            process.stdout.write('Operation faild \n')
-            getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
-            return
-          }
-
-          try {
-            await rename(oldPath, newPath)
-            getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
-          } catch (error) {
-            throw new Error(error)
-          }
-      })
+        await rename(sourcePath, destPath);
+    
+      } catch {
+        logError();
+      }
 
     break;
 
     case 'cp': 
-      // const isAnotherDir = directFileName.split('/').length > 1 //TODO//copy to another dir
-      // if (isAnotherDir) directFileName = '/' + directFileName
-
       try {
-        await copyFile(sourcePath, destPath)
-        
-      } catch (error) {
-        process.stdout.write('Operation faild \n')
-      }
+        if (!isFile || !destPath) throw new Error()//если дир уже существует
 
-      getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
+        if(!extname(destPath)){
+          await mkdir(destPath)
+          const pathDir = resolve(currentPath, destPath)
+        
+          await copyFile(sourcePath, join(pathDir, fileName))
+
+        } else {
+          await copyFile(sourcePath, destPath)
+
+        }
+        
+      } catch {
+        logError();
+      }
 
     break
 
     case 'mv': 
-      // const isAnotherDir = directFileName.split('/').length > 1 //TODO//move to another dir
-      // if (isAnotherDir) directFileName = '/' + directFileName
-
       try {
-        await copyFile(sourcePath, destPath)
-        await unlink(sourcePath)
-      } catch  {
-        process.stdout.write('Operation faild \n')
-      }
+        if (!isFile || !destPath) throw new Error()//если дир уже существует
 
-      getCurrenDirText(currentPath)
+        if(!extname(destPath)){
+          await mkdir(destPath)
+          const pathDir = resolve(currentPath, destPath)
+        
+          await copyFile(sourcePath, join(pathDir, fileName))
+          await unlink(sourcePath)
+
+        } else {
+          throw new Error()
+        }
+        
+      } catch {
+        logError();
+
+      }
 
     break
 
     case 'rm': 
-      // const isAnotherDir = directFileName.split('/').length > 1 //TODO//move to another dir
-      // if (isAnotherDir) directFileName = '/' + directFileName
       
       try {
         if (!isFile) throw new Error()
@@ -182,6 +173,7 @@ process.stdin.on('data', async (data) => {
 
       } catch  {
         logError()
+
       }
       
     break
@@ -206,6 +198,6 @@ process.stdin.on('data', async (data) => {
 
       break;
       }
-
-    getCurrenDirText(currentPath)
+      
+    getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
 })

@@ -7,7 +7,7 @@ export const getDirList = async (path) => {
 
     logDirInfo(elements)
 
-  } catch (error) {//make common error
+  } catch (error) {
     throw new Error(error)
   }
 }

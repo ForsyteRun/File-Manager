@@ -1,5 +1,4 @@
-
-export const logDirInfo =  (arr) => {
+export const logDirInfo = (arr) => {
   const getEntries = (type, tableName) => arr
     .filter(entry => entry[type]())
     .sort()
