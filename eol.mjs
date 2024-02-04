@@ -38,7 +38,7 @@ export const getOsData = (flag, currentPath) => {
     break;
   
     default:
-      getCurrenDirText(currentPath)
+      process.stdout.write('Invalid input \n')
 
     break;
   }

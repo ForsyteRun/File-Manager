@@ -27,6 +27,11 @@ const finalText = `Thank you for using File Manager, ${userName}, goodbye! \n`
 process.stdout.write(initText),
 getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
 
+process.on('SIGINT', () => {
+  process.stdout.write(finalText),
+  process.stdin.destroy()
+});
+
 process.stdin.on('data', async (data) => {
   let [work, fileName = '', directFileName = ''] = data.toString().trim().split(' ')
   
@@ -196,8 +201,10 @@ process.stdin.on('data', async (data) => {
 
     break
 
-      default:
-      break;
+    default:
+      process.stdout.write('Invalid input \n')
+
+    break;
       }
       
     getCurrenDirText(PATH_TO_CURRENT_DIR || pathToRoot)
